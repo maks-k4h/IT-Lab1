@@ -25,15 +25,16 @@ class GUI:
                     self._database_selector = self._get_database_selector()
 
                 with gr.Column():
-                    self._new_database_name_entry = gr.Textbox(label='New database name')
+                    self._database_name_entry = gr.Textbox(label='Database name')
                     self._create_database_button = gr.Button(value='Create Database')
+                    self._delete_database_button = gr.Button(value='Delete Database')
 
             with gr.Row():
                 with gr.Column():
                     self._table_selector = self._get_table_selector()
 
                 with gr.Column():
-                    self._new_table_name_entry = gr.Textbox(label='New table name')
+                    self._table_name_entry = gr.Textbox(label='Table name')
                     self._new_table_schema_entry = gr.TextArea(label='Schema definition', placeholder=(
                         """
                         INT id
@@ -42,6 +43,7 @@ class GUI:
                         """
                     ))
                     self._create_table_button = gr.Button(value='Create Table')
+                    self._delete_table_button = gr.Button(value='Delete Database')
 
             with gr.Column():
                 self._table_df = self._get_table_df()
@@ -49,20 +51,31 @@ class GUI:
                 with gr.Row():
                     with gr.Column():
                         self._current_schema_text = self._get_current_schema_text()
-                        self._new_row_entry = gr.Textbox(label='New row', placeholder='1; Milk; 0.5; $10')
+                        self._new_row_entry = gr.Textbox(label='Row', placeholder='1; Milk; 0.5; $10')
                         self._add_row_button = gr.Button(value='Add Row')
+                        self._update_row_button = gr.Button(value='Update Row')
 
                     with gr.Column():
                         self._delete_row_identifier_entry = gr.Textbox(label='Identifier of the row to be deleted')
                         self._delete_row_button = gr.Button(value='Delete Row')
 
             # SET UP CALLBACKS
-            # database ops.
+            def _load_page():
+                return self._get_database_selector()
+            demo.load(
+                _load_page,
+                outputs=self._database_selector,
+            )
+
             self._create_database_button.click(
                 self._create_database,
-                inputs=self._new_database_name_entry,
+                inputs=self._database_name_entry,
                 outputs=self._database_selector
-
+            )
+            self._delete_database_button.click(
+                self._delete_database,
+                inputs=self._database_name_entry,
+                outputs=self._database_selector
             )
             self._database_selector.select(
                 self._select_database,
@@ -76,11 +89,21 @@ class GUI:
             )
             self._create_table_button.click(
                 self._create_table,
-                inputs=[self._new_table_name_entry, self._new_table_schema_entry],
+                inputs=[self._table_name_entry, self._new_table_schema_entry],
                 outputs=[self._table_selector]
+            )
+            self._delete_table_button.click(
+                self._delete_table,
+                inputs=[self._table_name_entry],
+                outputs=self._table_selector
             )
             self._add_row_button.click(
                 self._add_row,
+                inputs=[self._new_row_entry],
+                outputs=[self._table_df]
+            )
+            self._update_row_button.click(
+                self._update_row,
                 inputs=[self._new_row_entry],
                 outputs=[self._table_df]
             )
@@ -96,16 +119,20 @@ class GUI:
         self._demo.launch()
 
     def _get_database_selector(self):
-        if len(self._service.databases) == 1:
-            self._current_database = self._service.get_database(self._service.databases[0])
         return gr.Dropdown(label='Current database',
-                           choices=self._service.databases,
-                           )
+                           choices=self._service.databases,)
 
     def _create_database(self, database_name: str):
         if database_name in self._service.databases:
             raise gr.Error(f"Database {database_name} already exists")
         self._service.add_database(Database(database_name, []))
+        return self._get_database_selector()
+
+    def _delete_database(self, database_name: str):
+        try:
+            self._service.remove_database(database_name)
+        except Exception as e:
+            raise gr.Error(e)
         return self._get_database_selector()
 
     def _select_database(self, database_name: str):
@@ -130,6 +157,13 @@ class GUI:
             raise gr.Error(e)
         return self._get_table_selector()
 
+    def _delete_table(self, table_name: str):
+        try:
+            self._current_database.remove_table(table_name)
+        except Exception as e:
+            raise gr.Error(e)
+        return self._get_table_selector()
+
     def _get_table_df(self):
         df = self._current_table.to_df() if self._current_table else None
         return gr.Dataframe(df) if df is not None else gr.Dataframe()
@@ -138,6 +172,12 @@ class GUI:
         assert self._current_table is not None, "Select the table first"
         row = parse_row(self._current_table.schema, row_str)
         self._current_table.insert(row)
+        return self._get_table_df()
+
+    def _update_row(self, row_str: str):
+        assert self._current_table is not None, "Select the table first"
+        row = parse_row(self._current_table.schema, row_str)
+        self._current_table.update(row)
         return self._get_table_df()
 
     def _delete_row(self, row_id: str):

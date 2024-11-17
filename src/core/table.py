@@ -34,7 +34,7 @@ class Table:
             if not self.validate_row(row):
                 return False
         # validate uniqueness of identifiers
-        identifiers = [row.identifier for row in self._rows]
+        identifiers = [row.identifier.value for row in self._rows]
         if len(identifiers) != len(set(identifiers)):
             return False
         return True
@@ -59,7 +59,7 @@ class Table:
     def update(self, row: Row) -> None:
         assert self.validate_row(row)
         for i in range(len(self._rows)):
-            if self._rows[i].identifier == row.identifier:
+            if self._rows[i].identifier.value == row.identifier.value:
                 self._rows[i] = row
                 return
         raise ValueError(f"Cannot update row {row.identifier} — not found")

@@ -21,6 +21,7 @@ class Service:
         for i in range(len(self._databases)):
             if self._databases[i].name == database_name:
                 del self._databases[i]
+                return
         raise ValueError('Database does not exist')
 
     @property
