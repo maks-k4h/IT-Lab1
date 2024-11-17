@@ -1,4 +1,4 @@
-from data_type import DataType
+from .data_type import DataType
 
 
 class String(DataType):

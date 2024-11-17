@@ -1,21 +1,32 @@
-from typing import List
+from typing import List, Union
+
+import pandas as pd
 
 from .row import Row
 from . import schema, datatypes
 
 
 class Table:
-    def __init__(self, sch: schema.TableSchema, rows: List[Row]):
+    def __init__(self, name: str, sch: schema.TableSchema, rows: List[Row]):
+        self._name = name
         self._schema = sch
         self._rows = rows
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @property
     def schema(self) -> schema.TableSchema:
         return self._schema
 
-    @property
-    def rows(self) -> List[Row]:
-        return self._rows
+    def to_df(self) -> pd.DataFrame:
+        data = [(r.identifier, *(v.value for v in r.values)) for r in self._rows]
+        df = pd.DataFrame(
+            data=data,
+            columns=['id', *self.schema.column_names],
+        )
+        return df
 
     def validate(self) -> bool:
         # validate rows
@@ -38,9 +49,10 @@ class Table:
         for v, d_type in zip(row.values, self._schema.types):
             if not type(v) is d_type:
                 return False
+        return True
 
     def insert(self, row: Row) -> None:
-        assert row.identifier not in {r.identifier for r in self._rows}
+        assert row.identifier.value not in {r.identifier.value for r in self._rows}
         assert self.validate_row(row)
         self._rows.append(row)
 
@@ -53,12 +65,11 @@ class Table:
         raise ValueError(f"Cannot update row {row.identifier} — not found")
 
     def delete(self, identifier: datatypes.DataType) -> None:
-        assert type(identifier) is self._schema.id_type
+        assert type(identifier) is self._schema.id_type, (type(identifier), self._schema.id_type)
         index = None
         for i, row in enumerate(self._rows):
-            if row.identifier == identifier:
+            if row.identifier.value == identifier.value:
                 index = i
                 break
         assert index is not None, f"Cannot delete row {identifier} — not found"
         del self._rows[index]
-

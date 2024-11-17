@@ -14,7 +14,8 @@ class TypeNames(Enum):
 
 
 class TableSchema:
-    def __init__(self, type_names: List[TypeNames], id_type_name: TypeNames):
+    def __init__(self, col_names: List[str], type_names: List[TypeNames], id_type_name: TypeNames):
+        self._col_names = col_names
         self._type_names = type_names
         self._id_type_name = id_type_name
 
@@ -29,6 +30,10 @@ class TableSchema:
     @property
     def type_names(self) -> List[TypeNames]:
         return self._type_names
+
+    @property
+    def column_names(self) -> List[str]:
+        return self._col_names
 
     @property
     def types(self) -> List[Type[datatypes.DataType]]:
