@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import gradio as gr
 import pandas as pd
 
@@ -6,6 +8,7 @@ from core.database import Database
 from core.table import Table
 from core.parsing.schema import parse_schema
 from core.parsing.row import parse_row
+from core.filesystem.coder import Coder
 
 
 class GUI:
@@ -23,6 +26,11 @@ class GUI:
             with gr.Row():
                 with gr.Column():
                     self._database_selector = self._get_database_selector()
+
+                with gr.Column():
+                    self._database_file = gr.File()
+                    self._database_import_button = gr.Button(value="Import Database")
+                    self._database_export_button = gr.Button(value="Export Database")
 
                 with gr.Column():
                     self._database_name_entry = gr.Textbox(label='Database name')
@@ -82,6 +90,15 @@ class GUI:
                 self._select_database,
                 inputs=self._database_selector,
                 outputs=[self._table_selector]
+            )
+            self._database_import_button.click(
+                self._import_database,
+                inputs=self._database_file,
+                outputs=self._database_selector
+            )
+            self._database_export_button.click(
+                self._export_database,
+                outputs=self._database_file,
             )
             self._table_selector.select(
                 self._select_table,
@@ -143,6 +160,18 @@ class GUI:
     def _select_database(self, database_name: str):
         self._current_database = self._service.get_database(database_name)
         return self._get_table_selector()
+
+    def _import_database(self, database_path: str):
+        p_db = Path(database_path)
+        assert p_db.exists(), "File does not exist"
+        self._service.add_database(Coder.import_database(p_db))
+        return self._get_table_selector()
+
+    def _export_database(self):
+        assert self._current_database is not None, "Select database first"
+        p_db = Path(f'{self._current_database.name}.json')
+        Coder.export_database(self._current_database, p_db)
+        return gr.File(p_db.as_posix())
 
     def _get_table_selector(self):
         choices = self._current_database.tables if self._current_database else []

@@ -17,6 +17,10 @@ class Table:
         return self._name
 
     @property
+    def rows(self) -> List[Row]:
+        return self._rows
+
+    @property
     def schema(self) -> schema.TableSchema:
         return self._schema
 
