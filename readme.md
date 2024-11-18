@@ -4,5 +4,5 @@
 Додаткові операції: вилучення повторюваних рядків у таблиці
 
 
- - [ ] Dropping duplicates \
+ - [x] Dropping duplicates
  - [ ] Loading from and exporting to disk

@@ -47,6 +47,7 @@ class GUI:
 
             with gr.Column():
                 self._table_df = self._get_table_df()
+                self._drop_duplicates_button = gr.Button(value='Drop Duplicates')
 
                 with gr.Row():
                     with gr.Column():
@@ -110,6 +111,10 @@ class GUI:
             self._delete_row_button.click(
                 self._delete_row,
                 inputs=[self._delete_row_identifier_entry],
+                outputs=[self._table_df]
+            )
+            self._drop_duplicates_button.click(
+                self._drop_duplicates,
                 outputs=[self._table_df]
             )
 
@@ -194,3 +199,8 @@ class GUI:
             *[(t.value, n) for t, n in zip(self._current_table.schema.type_names, self._current_table.schema.column_names)]
         ])
         return gr.Dataframe(df)
+
+    def _drop_duplicates(self):
+        assert self._current_table is not None, "Select the table first"
+        self._current_table.drop_duplicates()
+        return self._get_table_df()

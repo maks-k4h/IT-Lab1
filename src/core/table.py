@@ -73,3 +73,14 @@ class Table:
                 break
         assert index is not None, f"Cannot delete row {identifier} — not found"
         del self._rows[index]
+
+    def drop_duplicates(self) -> None:
+        unique_rows = set()
+        idx = 0
+        while idx < len(self._rows):
+            row_repr = tuple(v.value for v in self._rows[idx].values)
+            if row_repr not in unique_rows:
+                unique_rows.add(row_repr)
+                idx += 1
+            else:
+                del self._rows[idx]
