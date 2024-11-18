@@ -34,5 +34,5 @@ class MoneyInterval(DataType):
         return self._lower.is_valid and self._upper.is_valid and self._lower.value <= self._upper.value
 
     @property
-    def value(self) -> tuple:
-        return self._lower.value, self._upper.value
+    def value(self) -> str:
+        return f'{self._lower.value}-{self._upper.value}'

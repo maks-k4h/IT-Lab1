@@ -41,5 +41,5 @@ class Money(DataType):
         return isinstance(self._value, int) and 0 <= self._value <= Money.MAX_VALUE
 
     @property
-    def value(self) -> int:
-        return self._value
+    def value(self) -> str:
+        return f'${self._value}'

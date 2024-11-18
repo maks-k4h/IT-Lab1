@@ -18,5 +18,5 @@ class DataType(ABC):
 
     @property
     @abstractmethod
-    def value(self):
+    def value(self) -> str:
         ...

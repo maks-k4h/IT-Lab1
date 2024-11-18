@@ -25,5 +25,5 @@ class Integer(DataType):
         return isinstance(self._value, int)
 
     @property
-    def value(self) -> int:
-        return self._value
+    def value(self) -> str:
+        return str(self._value)

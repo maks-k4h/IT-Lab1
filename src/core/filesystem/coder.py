@@ -52,7 +52,7 @@ class Coder:
             identifier = schema.id_type.from_string(row_data[0])
             values = []
             for t, s in zip(schema.types, row_data[1:]):
-                values.append(t.from_string(s))
+                values.append(t.from_string(str(s)))
             rows.append(Row(identifier, values))
         return Table(name, schema, rows)
 

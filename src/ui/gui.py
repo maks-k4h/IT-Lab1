@@ -165,7 +165,7 @@ class GUI:
         p_db = Path(database_path)
         assert p_db.exists(), "File does not exist"
         self._service.add_database(Coder.import_database(p_db))
-        return self._get_table_selector()
+        return self._get_database_selector()
 
     def _export_database(self):
         assert self._current_database is not None, "Select database first"

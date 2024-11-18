@@ -25,5 +25,5 @@ class Real(DataType):
         return isinstance(self._value, float)
 
     @property
-    def value(self) -> float:
-        return self._value
+    def value(self) -> str:
+        return str(self._value)
